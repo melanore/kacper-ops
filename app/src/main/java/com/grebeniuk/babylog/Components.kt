@@ -136,7 +136,7 @@ fun BigOption(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    emoji: String? = null,
+    kind: String? = null,
 ) {
     val cs = MaterialTheme.colorScheme
     val bg by animateColorAsState(if (selected) cs.primary else cs.surfaceContainerHigh, label = "optBg")
@@ -145,7 +145,7 @@ fun BigOption(
         modifier = modifier.height(58.dp)) {
         Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)) {
-            if (emoji != null) { Text(emoji, fontSize = 20.sp); Spacer(Modifier.width(8.dp)) }
+            if (kind != null) { KindIcon(kind, fg, 20.dp); Spacer(Modifier.width(8.dp)) }
             Text(label, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, maxLines = 1)
         }
     }

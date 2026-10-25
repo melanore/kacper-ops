@@ -74,6 +74,11 @@ class AppController(private val store: Store?, private val scope: CoroutineScope
 
     fun resetTime() { sel = null }
 
+    /** Nudge the selected time by ±minutes (from "now" when nothing custom is picked). */
+    fun shiftTime(minutes: Int) {
+        setTime(effectiveTime(System.currentTimeMillis()) + minutes * MIN)
+    }
+
     // ------------------------------------------------------------ events
 
     private fun uid() = System.currentTimeMillis().toString(36) + Random.nextLong(1L shl 40).toString(36)

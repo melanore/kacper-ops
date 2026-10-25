@@ -9,13 +9,6 @@ object Kind {
     const val BOTH = "both"
     const val FEED = "feed"
     val all = listOf(PEE, POOP, BOTH, FEED)
-
-    fun emoji(type: String) = when (type) {
-        PEE -> "💧"
-        POOP -> "💩"
-        BOTH -> "💧💩"
-        else -> "🍼"
-    }
 }
 
 /** One logged thing. Field names match the JSON written by v1 of the app. */

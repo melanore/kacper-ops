@@ -66,7 +66,7 @@ private fun SideOptions(selected: String?, onPick: (String) -> Unit) {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             BigOption(s["bothSides"], selected == "LR", { onPick("LR") }, Modifier.weight(1f))
-            BigOption(s["bottle"], selected == "bottle", { onPick("bottle") }, Modifier.weight(1f), emoji = "🍼")
+            BigOption(s["bottle"], selected == "bottle", { onPick("bottle") }, Modifier.weight(1f), kind = Kind.FEED)
         }
     }
 }
@@ -102,7 +102,7 @@ fun FeedSheet(c: AppController, id: String, onDone: () -> Unit) {
 
     ModalBottomSheet(onDismissRequest = onDone, sheetState = state) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 20.dp)) {
-            Text("🍼 ${s["feed"]} · ${hhmm(e.t)}", style = MaterialTheme.typography.titleLarge)
+            Text("${s["feed"]} · ${hhmm(e.t)}", style = MaterialTheme.typography.titleLarge)
             Text(s["feedDetails"], color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 2.dp, bottom = 16.dp))
             SideOptions(e.side) { side ->
@@ -148,7 +148,7 @@ fun EditSheet(c: AppController, id: String, onDone: () -> Unit, onDeleted: (Even
                         pair.forEach { t ->
                             BigOption(s[t], e.type == t, {
                                 e = if (t == Kind.FEED) e.copy(type = t) else e.copy(type = t, side = null, ml = null)
-                            }, Modifier.weight(1f), emoji = Kind.emoji(t))
+                            }, Modifier.weight(1f), kind = t)
                         }
                     }
                 }
@@ -167,6 +167,8 @@ fun EditSheet(c: AppController, id: String, onDone: () -> Unit, onDeleted: (Even
                 ) { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) }
             }
             Spacer(Modifier.height(8.dp))
+            QuickShift(canForward = e.t < nowCap) { d -> e = e.copy(t = minOf(e.t + d * MIN, nowCap)) }
+            Spacer(Modifier.height(8.dp))
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 (0 until 24).chunked(6).forEach { row ->
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -181,7 +183,7 @@ fun EditSheet(c: AppController, id: String, onDone: () -> Unit, onDeleted: (Even
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 4.dp)) {
                     for (m in 0..50 step 10) {
                         val t = withMinute(e.t, m)
-                        Pill(":" + two(m), selected = minuteOf(e.t) / 10 * 10 == m, enabled = t <= now,
+                        Pill(":" + two(m), selected = minuteOf(e.t) == m, enabled = t <= now,
                             onClick = { e = e.copy(t = t) }, modifier = Modifier.weight(1f).height(44.dp), fontSize = 16)
                     }
                 }

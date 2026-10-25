@@ -92,7 +92,7 @@ fun MainScreen(c: AppController, onSettings: () -> Unit) {
     fun log(type: String) {
         view.tick()
         val e = c.log(type)
-        showUndo("${Kind.emoji(type)}  ${s[type]} · ${hhmm(e.t)}") { c.delete(e.id) }
+        showUndo("${s[type]} · ${hhmm(e.t)}") { c.delete(e.id) }
         if (type == Kind.FEED) feedFor = e.id
     }
 
@@ -214,6 +214,8 @@ private fun TimeCard(c: AppController, now: Long) {
                     modifier = Modifier.height(40.dp).width(76.dp))
             }
             Spacer(Modifier.height(14.dp))
+            QuickShift(canForward = !isNow) { d -> c.shiftTime(d) }
+            Spacer(Modifier.height(8.dp))
             LazyRow(state = hourList, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(24) { i ->
                     val h = hourStart(now) - i * HOUR
@@ -273,7 +275,7 @@ private fun ActionTile(type: String, big: Boolean, modifier: Modifier, onLog: (S
         modifier = modifier.height(if (big) 132.dp else 100.dp).graphicsLayer { scaleX = scale; scaleY = scale },
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Text(Kind.emoji(type), fontSize = if (big) 46.sp else 30.sp)
+            KindIcon(type, cat.accent, if (big) 46.dp else 32.dp)
             Spacer(Modifier.height(4.dp))
             Text(s[type], fontSize = if (big) 19.sp else 17.sp, fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface)
@@ -286,15 +288,15 @@ private fun SinceRow(events: List<Event>, now: Long, modifier: Modifier) {
     val s = LocalStrings.current
     val t0 = dayStart(now)
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        SinceTile("🍼", s["feed"], events, now, t0, 3, Modifier.weight(1f)) { it.isFeed }
-        SinceTile("💧", s["pee"], events, now, t0, 0, Modifier.weight(1f)) { it.isPee }
-        SinceTile("💩", s["poop"], events, now, t0, 0, Modifier.weight(1f)) { it.isPoop }
+        SinceTile(Kind.FEED, s["feed"], events, now, t0, 3, Modifier.weight(1f)) { it.isFeed }
+        SinceTile(Kind.PEE, s["pee"], events, now, t0, 0, Modifier.weight(1f)) { it.isPee }
+        SinceTile(Kind.POOP, s["poop"], events, now, t0, 0, Modifier.weight(1f)) { it.isPoop }
     }
 }
 
 @Composable
 private fun SinceTile(
-    emoji: String, label: String, events: List<Event>, now: Long, t0: Long, warnHours: Int,
+    type: String, label: String, events: List<Event>, now: Long, t0: Long, warnHours: Int,
     modifier: Modifier, match: (Event) -> Boolean,
 ) {
     val s = LocalStrings.current
@@ -304,8 +306,12 @@ private fun SinceTile(
     val late = last != null && warnHours > 0 && now - last.t > warnHours * HOUR
     Surface(shape = RoundedCornerShape(20.dp), color = if (late) cs.errorContainer else cs.surfaceContainerLow, modifier = modifier) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
-            Text("$emoji $label", style = MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant, maxLines = 1,
-                overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                KindIcon(type, LocalCats.current.of(type).accent, 14.dp)
+                Spacer(Modifier.width(5.dp))
+                Text(label, style = MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant, maxLines = 1,
+                    overflow = TextOverflow.Ellipsis)
+            }
             Text(
                 if (last != null) shortAgo(now - last.t, s) else s["never"],
                 fontSize = 20.sp, fontWeight = FontWeight.Bold, style = Tnum, maxLines = 1,
@@ -332,10 +338,9 @@ private fun DayHeader(day: Long, items: List<Event>, now: Long) {
         verticalAlignment = Alignment.Bottom,
     ) {
         Text(dayLabel(day, now, s), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-        Text(
-            "🍼 $feeds" + (if (ml > 0) " ($ml ${s["ml"]})" else "") + "  ·  💧 $pee  ·  💩 $poop",
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Total(Kind.FEED, "$feeds" + if (ml > 0) " · $ml ${s["ml"]}" else "")
+        Total(Kind.PEE, "$pee")
+        Total(Kind.POOP, "$poop")
     }
 }
 
@@ -365,7 +370,7 @@ private fun EventRow(c: AppController, e: Event, first: Boolean, last: Boolean, 
             Box(
                 Modifier.size(40.dp).clip(RoundedCornerShape(13.dp)).background(cat.container),
                 contentAlignment = Alignment.Center,
-            ) { Text(Kind.emoji(e.type), fontSize = if (e.type == Kind.BOTH) 13.sp else 20.sp, maxLines = 1) }
+            ) { KindIcon(e.type, cat.accent, if (e.type == Kind.BOTH) 17.dp else 22.dp) }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(s[e.type], fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
@@ -376,6 +381,33 @@ private fun EventRow(c: AppController, e: Event, first: Boolean, last: Boolean, 
                 }
             }
             Avatar(p, c.profileName(p, s), 26.dp)
+        }
+    }
+}
+
+@Composable
+private fun Total(type: String, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
+        KindIcon(type, LocalCats.current.of(type).accent, 14.dp)
+        Spacer(Modifier.width(3.dp))
+        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** −15 / −10 / +10 / +15 minute nudges. */
+@Composable
+fun QuickShift(canForward: Boolean, onShift: (Int) -> Unit) {
+    val s = LocalStrings.current
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf(-15, -10, 10, 15).forEach { d ->
+            Pill(
+                if (d < 0) "\u2212${-d}" else "+$d",
+                selected = false,
+                enabled = d < 0 || canForward,
+                onClick = { onShift(d) },
+                sub = s["min"],
+                modifier = Modifier.weight(1f).height(50.dp),
+            )
         }
     }
 }

@@ -148,9 +148,9 @@ class GitHubSync {
         if (changed.size == 1) {
             val e = changed[0]
             val verb = when {
-                e.deleted -> "✖ removed"
-                remote.events[e.id] != null -> "✎ edited"
-                else -> Kind.emoji(e.type)
+                e.deleted -> "removed"
+                remote.events[e.id] != null -> "edited"
+                else -> "added"
             }
             return "$verb ${e.type} ${hhmm(e.t)} · $who"
         }

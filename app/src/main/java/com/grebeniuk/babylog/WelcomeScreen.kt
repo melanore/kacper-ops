@@ -1,6 +1,11 @@
 package com.grebeniuk.babylog
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +40,14 @@ fun WelcomeScreen(c: AppController) {
         Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(24.dp),
     ) {
         Spacer(Modifier.height(32.dp))
-        Text("🍼💧💩", fontSize = 40.sp)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            listOf(Kind.FEED, Kind.PEE, Kind.POOP).forEach { k ->
+                val cat = LocalCats.current.of(k)
+                Box(Modifier.size(52.dp).clip(CircleShape).background(cat.container), contentAlignment = Alignment.Center) {
+                    KindIcon(k, cat.accent, 28.dp)
+                }
+            }
+        }
         Spacer(Modifier.height(12.dp))
         Text("KacperOps", fontSize = 40.sp, fontWeight = FontWeight.Black, letterSpacing = (-1).sp)
         Text(s["tagline"], style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
