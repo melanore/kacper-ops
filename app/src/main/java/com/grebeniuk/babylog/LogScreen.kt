@@ -96,7 +96,10 @@ fun LogScreen(c: AppController, initialType: String, onClose: () -> Unit, startC
 
         // ---- everything else is pushed to the bottom
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
-            Column(Modifier.verticalScroll(rememberScrollState()).padding(top = 8.dp)) {
+            val scroll = rememberScrollState()
+            // keep the thumb-zone controls in view when the panel grows (custom picker / feed details)
+            LaunchedEffect(custom, type, side) { scroll.animateScrollTo(scroll.maxValue) }
+            Column(Modifier.verticalScroll(scroll).padding(top = 8.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 12.dp)) {
                     Kind.all.forEach { k ->
                         val kc = LocalCats.current.of(k)

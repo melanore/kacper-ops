@@ -58,13 +58,13 @@ object KindIcons {
 
     val Bottle: ImageVector by lazy {
         icon("bottle") {
-            moveTo(10.2f, 4.8f)
-            curveTo(10.2f, 2.2f, 13.8f, 2.2f, 13.8f, 4.8f)
-            lineTo(14.2f, 5.6f)
-            lineTo(9.8f, 5.6f)
+            moveTo(9.6f, 5f)
+            curveTo(9.6f, 1.6f, 14.4f, 1.6f, 14.4f, 5f)
+            lineTo(14.9f, 6f)
+            lineTo(9.1f, 6f)
             close()
-            roundRect(7.6f, 5.4f, 16.4f, 8f, 1.1f)
-            roundRect(8.3f, 8.4f, 15.7f, 21.6f, 2.6f)
+            roundRect(6.2f, 5.8f, 17.8f, 8.8f, 1.3f)
+            roundRect(6.8f, 9.2f, 17.2f, 22f, 3.4f)
         }
     }
 }
