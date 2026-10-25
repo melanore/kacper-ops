@@ -229,28 +229,24 @@ private fun TypeButton(type: String, height: Int, modifier: Modifier, onPick: (S
     }
 }
 
+/** Today's totals: ml for feeds, counts for pee / poop. No "time since". */
 @Composable
 private fun SinceRow(events: List<Event>, now: Long) {
     val s = LocalStrings.current
-    val t0 = dayStart(now)
+    val today = events.filter { it.t >= dayStart(now) }
+    val feeds = today.filter { it.isFeed }
+    val ml = feeds.sumOf { it.ml ?: 0 }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        SinceTile(Kind.FEED, s["feed"], events, now, t0, 3, Modifier.weight(1f)) { it.isFeed }
-        SinceTile(Kind.PEE, s["pee"], events, now, t0, 0, Modifier.weight(1f)) { it.isPee }
-        SinceTile(Kind.POOP, s["poop"], events, now, t0, 0, Modifier.weight(1f)) { it.isPoop }
+        TotalTile(Kind.FEED, s["feed"], "$ml", s["ml"], "${feeds.size}× · ${s["todayN"]}", Modifier.weight(1f))
+        TotalTile(Kind.PEE, s["pee"], "${today.count { it.isPee }}", null, s["todayN"], Modifier.weight(1f))
+        TotalTile(Kind.POOP, s["poop"], "${today.count { it.isPoop }}", null, s["todayN"], Modifier.weight(1f))
     }
 }
 
 @Composable
-private fun SinceTile(
-    type: String, label: String, events: List<Event>, now: Long, t0: Long, warnHours: Int,
-    modifier: Modifier, match: (Event) -> Boolean,
-) {
-    val s = LocalStrings.current
+private fun TotalTile(type: String, label: String, value: String, unit: String?, sub: String, modifier: Modifier) {
     val cs = MaterialTheme.colorScheme
-    val last = events.firstOrNull(match)
-    val count = events.count { it.t >= t0 && match(it) }
-    val late = last != null && warnHours > 0 && now - last.t > warnHours * HOUR
-    Surface(shape = RoundedCornerShape(20.dp), color = if (late) cs.errorContainer else cs.surfaceContainerLow, modifier = modifier) {
+    Surface(shape = RoundedCornerShape(20.dp), color = cs.surfaceContainerLow, modifier = modifier) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 KindIcon(type, LocalCats.current.of(type).accent, 14.dp)
@@ -258,15 +254,15 @@ private fun SinceTile(
                 Text(label, style = MaterialTheme.typography.labelMedium, color = cs.onSurfaceVariant, maxLines = 1,
                     overflow = TextOverflow.Ellipsis)
             }
-            Text(
-                if (last != null) shortAgo(now - last.t, s) else s["never"],
-                fontSize = 20.sp, fontWeight = FontWeight.Bold, style = Tnum, maxLines = 1,
-                color = if (late) cs.onErrorContainer else cs.onSurface,
-            )
-            Text(
-                (if (last != null) hhmm(last.t) + " · " else "") + "$count ${s["todayN"]}",
-                style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1,
-            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(value, fontSize = 26.sp, fontWeight = FontWeight.Bold, style = Tnum, maxLines = 1)
+                if (unit != null) {
+                    Spacer(Modifier.width(4.dp))
+                    Text(unit, style = MaterialTheme.typography.titleSmall, color = cs.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 4.dp))
+                }
+            }
+            Text(sub, style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant, maxLines = 1)
         }
     }
 }
