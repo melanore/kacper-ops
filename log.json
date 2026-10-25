@@ -1,0 +1,443 @@
+{
+ "app": "KacperOps",
+ "profiles": {
+  "p-dad": {
+   "id": "p-dad",
+   "def": "dad",
+   "name": "Max",
+   "order": 1,
+   "color": "#4E7FD9",
+   "updated": 1792949548044
+  },
+  "p-mom": {
+   "id": "p-mom",
+   "def": "mom",
+   "name": "Paulina",
+   "order": 2,
+   "color": "#D9578A",
+   "updated": 1792949548044
+  },
+  "p-other": {
+   "id": "p-other",
+   "def": "other",
+   "name": "",
+   "order": 3,
+   "color": "#2E9E5B",
+   "updated": 0
+  }
+ },
+ "events": {
+  "seed-1021-1650-feed": {
+   "id": "seed-1021-1650-feed",
+   "type": "feed",
+   "t": 1792594200000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 10
+  },
+  "seed-1021-2130-feed": {
+   "id": "seed-1021-2130-feed",
+   "type": "feed",
+   "t": 1792611000000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 10
+  },
+  "seed-1022-0130-feed": {
+   "id": "seed-1022-0130-feed",
+   "type": "feed",
+   "t": 1792625400000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 10
+  },
+  "seed-1022-0500-feed": {
+   "id": "seed-1022-0500-feed",
+   "type": "feed",
+   "t": 1792638000000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 10
+  },
+  "seed-1022-0900-feed": {
+   "id": "seed-1022-0900-feed",
+   "type": "feed",
+   "t": 1792652400000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 10
+  },
+  "seed-1022-1230-feed": {
+   "id": "seed-1022-1230-feed",
+   "type": "feed",
+   "t": 1792665000000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 15
+  },
+  "seed-1022-1600-feed": {
+   "id": "seed-1022-1600-feed",
+   "type": "feed",
+   "t": 1792677600000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 20
+  },
+  "seed-1022-1800-feed": {
+   "id": "seed-1022-1800-feed",
+   "type": "feed",
+   "t": 1792684800000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 10
+  },
+  "seed-1022-2000-feed": {
+   "id": "seed-1022-2000-feed",
+   "type": "feed",
+   "t": 1792692000000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 20
+  },
+  "seed-1022-2315-feed": {
+   "id": "seed-1022-2315-feed",
+   "type": "feed",
+   "t": 1792703700000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 20
+  },
+  "seed-1023-0245-feed": {
+   "id": "seed-1023-0245-feed",
+   "type": "feed",
+   "t": 1792716300000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 20
+  },
+  "seed-1023-0600-feed": {
+   "id": "seed-1023-0600-feed",
+   "type": "feed",
+   "t": 1792728000000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 20
+  },
+  "seed-1023-0930-feed": {
+   "id": "seed-1023-0930-feed",
+   "type": "feed",
+   "t": 1792740600000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 20
+  },
+  "seed-1023-1230-feed": {
+   "id": "seed-1023-1230-feed",
+   "type": "feed",
+   "t": 1792751400000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 30
+  },
+  "seed-1023-1645-feed": {
+   "id": "seed-1023-1645-feed",
+   "type": "feed",
+   "t": 1792766700000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 10
+  },
+  "seed-1023-1900-feed": {
+   "id": "seed-1023-1900-feed",
+   "type": "feed",
+   "t": 1792774800000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 30
+  },
+  "seed-1023-2240-feed": {
+   "id": "seed-1023-2240-feed",
+   "type": "feed",
+   "t": 1792788000000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 30
+  },
+  "seed-1024-0100-feed": {
+   "id": "seed-1024-0100-feed",
+   "type": "feed",
+   "t": 1792796400000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 30
+  },
+  "seed-1024-0400-feed": {
+   "id": "seed-1024-0400-feed",
+   "type": "feed",
+   "t": 1792807200000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 30
+  },
+  "seed-1024-0550-feed": {
+   "id": "seed-1024-0550-feed",
+   "type": "feed",
+   "t": 1792813800000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 30
+  },
+  "seed-1024-0900-feed": {
+   "id": "seed-1024-0900-feed",
+   "type": "feed",
+   "t": 1792825200000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 40
+  },
+  "seed-1024-1030-pee": {
+   "id": "seed-1024-1030-pee",
+   "type": "pee",
+   "t": 1792830600000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1024-1230-pee": {
+   "id": "seed-1024-1230-pee",
+   "type": "pee",
+   "t": 1792837800000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1024-1245-feed": {
+   "id": "seed-1024-1245-feed",
+   "type": "feed",
+   "t": 1792838700000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 40
+  },
+  "seed-1024-1545-poop": {
+   "id": "seed-1024-1545-poop",
+   "type": "poop",
+   "t": 1792849500000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1024-1600-feed": {
+   "id": "seed-1024-1600-feed",
+   "type": "feed",
+   "t": 1792850400000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 40
+  },
+  "seed-1024-1840-feed": {
+   "id": "seed-1024-1840-feed",
+   "type": "feed",
+   "t": 1792860000000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 40
+  },
+  "seed-1024-2135-feed": {
+   "id": "seed-1024-2135-feed",
+   "type": "feed",
+   "t": 1792870500000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 45
+  },
+  "seed-1024-2310-pee": {
+   "id": "seed-1024-2310-pee",
+   "type": "pee",
+   "t": 1792876200000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1024-2330-feed": {
+   "id": "seed-1024-2330-feed",
+   "type": "feed",
+   "t": 1792877400000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 50,
+   "note": "~50 ml"
+  },
+  "seed-1025-0120-feed": {
+   "id": "seed-1025-0120-feed",
+   "type": "feed",
+   "t": 1792884000000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 40
+  },
+  "seed-1025-0150-poop": {
+   "id": "seed-1025-0150-poop",
+   "type": "poop",
+   "t": 1792885800000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "note": "mokry bąk"
+  },
+  "seed-1025-0330-pee": {
+   "id": "seed-1025-0330-pee",
+   "type": "pee",
+   "t": 1792895400000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1025-0335-feed": {
+   "id": "seed-1025-0335-feed",
+   "type": "feed",
+   "t": 1792895700000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 48
+  },
+  "seed-1025-0615-pee": {
+   "id": "seed-1025-0615-pee",
+   "type": "pee",
+   "t": 1792905300000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1025-0625-feed": {
+   "id": "seed-1025-0625-feed",
+   "type": "feed",
+   "t": 1792905900000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 45
+  },
+  "seed-1025-0900-feed": {
+   "id": "seed-1025-0900-feed",
+   "type": "feed",
+   "t": 1792915200000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 50
+  },
+  "seed-1025-1100-pee": {
+   "id": "seed-1025-1100-pee",
+   "type": "pee",
+   "t": 1792922400000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1025-1120-feed": {
+   "id": "seed-1025-1120-feed",
+   "type": "feed",
+   "t": 1792923600000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 35
+  },
+  "seed-1025-1330-pee": {
+   "id": "seed-1025-1330-pee",
+   "type": "pee",
+   "t": 1792931400000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1025-1340-feed": {
+   "id": "seed-1025-1340-feed",
+   "type": "feed",
+   "t": 1792932000000,
+   "by": "p-mom",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 25
+  },
+  "seed-1025-1500-pee": {
+   "id": "seed-1025-1500-pee",
+   "type": "pee",
+   "t": 1792936800000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044
+  },
+  "seed-1025-1620-feed": {
+   "id": "seed-1025-1620-feed",
+   "type": "feed",
+   "t": 1792941600000,
+   "by": "p-dad",
+   "created": 1792949548044,
+   "updated": 1792949548044,
+   "side": "bottle",
+   "ml": 45
+  }
+ }
+}

@@ -41,9 +41,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
-val ML_PRESETS = listOf(10, 20, 30, 40, 50, 60, 80, 100, 120, 150)
+val ML_PRESETS = listOf(30, 40, 50, 60)
+const val ML_STEP = 5
+const val ML_MAX = 90
 
 fun sideLabel(side: String?, s: Strings): String? = when (side) {
     "L" -> s["left"]
@@ -124,18 +127,30 @@ fun SideOptions(selected: String?, onPick: (String) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/** 30/40/50/60 presets + −5/+5 stepper (5…90 ml). [onPreset] lets the log flow jump ahead on a preset tap. */
 @Composable
-fun MlOptions(selected: Int?, onPick: (Int) -> Unit) {
+fun AmountPicker(ml: Int?, onChange: (Int) -> Unit, height: Int = 64, onPreset: (Int) -> Unit = onChange) {
     val s = LocalStrings.current
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(top = 12.dp),
-    ) {
-        ML_PRESETS.forEach { m ->
-            Pill("$m", selected = selected == m, onClick = { onPick(m) }, sub = s["ml"],
-                modifier = Modifier.size(width = 64.dp, height = 56.dp))
+    val base = ml ?: 40
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            ML_PRESETS.forEach { m ->
+                Pill("$m", selected = ml == m, onClick = { onPreset(m) }, sub = s["ml"],
+                    fontSize = if (height >= 72) 26 else 20, modifier = Modifier.weight(1f).height(height.dp))
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Pill("\u2212$ML_STEP", selected = false, enabled = base > ML_STEP,
+                onClick = { onChange((base - ML_STEP).coerceIn(ML_STEP, ML_MAX)) },
+                sub = s["ml"], fontSize = 22, modifier = Modifier.weight(1f).height(height.dp))
+            Text(
+                if (ml != null) "$ml ${s["ml"]}" else "\u2014",
+                fontSize = 30.sp, fontWeight = FontWeight.Black, style = Tnum, textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1.3f),
+            )
+            Pill("+$ML_STEP", selected = false, enabled = base < ML_MAX,
+                onClick = { onChange((base + ML_STEP).coerceIn(ML_STEP, ML_MAX)) },
+                sub = s["ml"], fontSize = 22, modifier = Modifier.weight(1f).height(height.dp))
         }
     }
 }
@@ -179,8 +194,9 @@ fun EditSheet(c: AppController, id: String, onDone: () -> Unit, onDeleted: (Even
 
             if (e.type == Kind.FEED) {
                 SectionTitle(s["feed"])
+                AmountPicker(e.ml, onChange = { m -> e = e.copy(side = "bottle", ml = m) })
+                Spacer(Modifier.height(10.dp))
                 SideOptions(e.side) { side -> e = e.copy(side = side, ml = if (side == "bottle") e.ml else null) }
-                if (e.side == "bottle") MlOptions(e.ml) { m -> e = e.copy(ml = m) }
             }
 
             SectionTitle(s["note"])

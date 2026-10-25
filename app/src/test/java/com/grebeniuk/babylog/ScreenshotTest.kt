@@ -63,7 +63,8 @@ class ScreenshotTest {
     @Test fun mainLight() { val c = sample(); shot("1_home_light", false) { MainScreen(c, {}, {}) } }
     @Test fun mainDark() { val c = sample(); shot("2_home_dark", true) { MainScreen(c, {}, {}) } }
     @Test fun logPee() { val c = sample(); shot("3_step2_pee_dark", true) { LogScreen(c, Kind.PEE, {}) } }
-    @Test fun logFeedCustomPl() { val c = sample(); shot("4_step2_feed_custom_pl", false, "pl") { LogScreen(c, Kind.FEED, {}, startCustom = true) } }
+    @Test fun feedAmount() { val c = sample(); shot("4_feed_amount_light", false) { LogScreen(c, Kind.FEED, {}) } }
+    @Test fun feedTimeCustomPl() { val c = sample(); shot("4b_feed_time_custom_pl", false, "pl") { LogScreen(c, Kind.FEED, {}, startCustom = true, startOnTime = true) } }
     @Test fun settingsDark() { val c = sample(); shot("5_settings_dark", true) { SettingsScreen(c) {} } }
     @Test fun welcomeLight() { val c = sample(false); shot("6_welcome_uk", false, "uk") { WelcomeScreen(c) } }
 }

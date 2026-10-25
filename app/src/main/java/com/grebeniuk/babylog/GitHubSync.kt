@@ -62,7 +62,7 @@ class GitHubSync {
 
     // ---------------------------------------------------------------- GET
 
-    private suspend fun fetch(cfg: Config): Failure? {
+    private suspend fun fetch(cfg: Config, retry: Boolean = true): Failure? {
         val base = "$API/repos/${cfg.repo}"
         val r = http("GET", "$base/contents/$PATH?ref=${enc(cfg.branch)}", cfg.token, etag = etag)
         return when (r.code) {
@@ -86,8 +86,11 @@ class GitHubSync {
             }
             404 -> {
                 val f = ensureBranch(cfg)
-                if (f == null) { remote = Db(); sha = null; etag = null }
-                f
+                when {
+                    f != null -> f
+                    retry -> fetch(cfg, retry = false) // branch exists now; it may already contain log.json
+                    else -> { remote = Db(); sha = null; etag = null; null }
+                }
             }
             else -> failureFor(r)
         }
