@@ -1,0 +1,74 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+
+      - name: Restore signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then echo "$KEYSTORE_B64" | base64 -d > app/release.keystore; echo "using release key"; fi
+
+      - name: Build release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: gradle --no-daemon :app:assembleRelease
+
+      - name: Render screenshots
+        continue-on-error: true
+        run: gradle --no-daemon :app:testDebugUnitTest -Proborazzi.test.record=true
+
+      - name: Collect output
+        run: |
+          mkdir -p out/screenshots
+          cp app/build/outputs/apk/release/app-release.apk out/KacperOps.apk
+          cp app/screenshots/*.png out/screenshots/ 2>/dev/null || true
+          ls -la out out/screenshots
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KacperOps-${{ github.run_number }}
+          path: out/
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v2.${{ github.run_number }}" out/KacperOps.apk \
+            --title "KacperOps 2.${{ github.run_number }}" \
+            --notes "Built from ${GITHUB_SHA::7}. Install KacperOps.apk on both phones." --latest
+
+      - name: Push build output to ci-output branch
+        run: |
+          cd out
+          git init -q -b ci-output
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A
+          git commit -qm "Build ${{ github.run_number }} (${GITHUB_SHA::7})"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-output
