@@ -33,8 +33,8 @@ class ScreenshotTest {
         c.renameProfile("p-dad", "Max")
         val n = System.currentTimeMillis()
         fun add(type: String, minutesAgo: Long, by: String = "p-dad", side: String? = null, ml: Int? = null) {
-            val e = c.log(type)
-            c.update(e.copy(t = floor10(n - minutesAgo * MIN), by = by, side = side, ml = ml))
+            val e = c.log(type, floor10(n - minutesAgo * MIN), side, ml)
+            c.update(e.copy(by = by))
         }
         add(Kind.FEED, 25, side = "L")
         add(Kind.PEE, 40, by = "p-mom")
@@ -60,12 +60,10 @@ class ScreenshotTest {
         rule.onRoot().captureRoboImage("screenshots/$name.png")
     }
 
-    @Test fun mainLight() { val c = sample(); shot("1_main_light", false) { MainScreen(c) {} } }
-    @Test fun mainDark() { val c = sample(); shot("2_main_dark", true) { MainScreen(c) {} } }
-    @Test fun mainCustomTimePl() {
-        val c = sample(); c.setTime(floor10(c.now - 95 * MIN))
-        shot("3_main_custom_time_pl", true, "pl") { MainScreen(c) {} }
-    }
-    @Test fun settingsDark() { val c = sample(); shot("4_settings_dark", true) { SettingsScreen(c) {} } }
-    @Test fun welcomeLight() { val c = sample(false); shot("5_welcome_uk", false, "uk") { WelcomeScreen(c) } }
+    @Test fun mainLight() { val c = sample(); shot("1_home_light", false) { MainScreen(c, {}, {}) } }
+    @Test fun mainDark() { val c = sample(); shot("2_home_dark", true) { MainScreen(c, {}, {}) } }
+    @Test fun logPee() { val c = sample(); shot("3_step2_pee_dark", true) { LogScreen(c, Kind.PEE, {}) } }
+    @Test fun logFeedCustomPl() { val c = sample(); shot("4_step2_feed_custom_pl", false, "pl") { LogScreen(c, Kind.FEED, {}, startCustom = true) } }
+    @Test fun settingsDark() { val c = sample(); shot("5_settings_dark", true) { SettingsScreen(c) {} } }
+    @Test fun welcomeLight() { val c = sample(false); shot("6_welcome_uk", false, "uk") { WelcomeScreen(c) } }
 }

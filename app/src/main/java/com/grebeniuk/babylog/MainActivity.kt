@@ -16,6 +16,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
@@ -97,11 +99,20 @@ fun App(c: AppController) {
 @Composable
 private fun Root(c: AppController) {
     var screen by rememberSaveable { mutableStateOf("main") }
-    val target = if (c.me() == null) "welcome" else screen
+    var logType by rememberSaveable { mutableStateOf<String?>(null) }
+    val target = when {
+        c.me() == null -> "welcome"
+        logType != null -> "log:$logType"
+        else -> screen
+    }
     AnimatedContent(
         targetState = target,
         transitionSpec = {
-            if (targetState == "settings") {
+            if (targetState.startsWith("log:")) {
+                (slideInVertically { it / 3 } + fadeIn()) togetherWith fadeOut()
+            } else if (initialState.startsWith("log:")) {
+                fadeIn() togetherWith (slideOutVertically { it / 3 } + fadeOut())
+            } else if (targetState == "settings") {
                 (slideInHorizontally { it / 4 } + fadeIn()) togetherWith (slideOutHorizontally { -it / 8 } + fadeOut())
             } else {
                 (slideInHorizontally { -it / 8 } + fadeIn()) togetherWith (slideOutHorizontally { it / 4 } + fadeOut())
@@ -115,7 +126,8 @@ private fun Root(c: AppController) {
                 BackHandler { screen = "main" }
                 SettingsScreen(c) { screen = "main" }
             }
-            else -> MainScreen(c) { screen = "settings" }
+            "main" -> MainScreen(c, onSettings = { screen = "settings" }, onPick = { logType = it })
+            else -> LogScreen(c, scr.removePrefix("log:"), onClose = { logType = null })
         }
     }
 }

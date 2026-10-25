@@ -137,16 +137,19 @@ fun BigOption(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     kind: String? = null,
+    height: Int = 60,
+    icon: (@Composable () -> Unit)? = null,
 ) {
     val cs = MaterialTheme.colorScheme
     val bg by animateColorAsState(if (selected) cs.primary else cs.surfaceContainerHigh, label = "optBg")
     val fg by animateColorAsState(if (selected) cs.onPrimary else cs.onSurface, label = "optFg")
-    Surface(onClick = onClick, shape = RoundedCornerShape(18.dp), color = bg, contentColor = fg,
-        modifier = modifier.height(58.dp)) {
+    Surface(onClick = onClick, shape = RoundedCornerShape(20.dp), color = bg, contentColor = fg,
+        modifier = modifier.height(height.dp)) {
         Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)) {
-            if (kind != null) { KindIcon(kind, fg, 20.dp); Spacer(Modifier.width(8.dp)) }
-            Text(label, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, maxLines = 1)
+            if (kind != null) { KindIcon(kind, fg, 22.dp); Spacer(Modifier.width(8.dp)) }
+            if (icon != null) { icon(); Spacer(Modifier.width(8.dp)) }
+            Text(label, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, maxLines = 1)
         }
     }
 }

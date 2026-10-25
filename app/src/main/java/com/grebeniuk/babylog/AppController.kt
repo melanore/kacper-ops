@@ -24,10 +24,10 @@ class AppController(private val store: Store?, private val scope: CoroutineScope
         private set
     var now by mutableLongStateOf(System.currentTimeMillis())
 
-    /** Custom time picked in the time card; null = "now". Reverts to now after [CUSTOM_TTL] idle. */
-    var sel by mutableStateOf<Long?>(null)
+    /** Last entry logged from the time step; the home screen shows Undo for it once. */
+    class UndoNote(val event: Event) { var shown = false }
+    var undoNote by mutableStateOf<UndoNote?>(null)
         private set
-    private var selTouched = 0L
 
     var syncing by mutableStateOf(false)
         private set
@@ -53,41 +53,17 @@ class AppController(private val store: Store?, private val scope: CoroutineScope
         }
     }
 
-    // ------------------------------------------------------------ time selection
-
-    private fun customTime(now: Long): Long? =
-        sel?.takeIf { now - selTouched < CUSTOM_TTL && it < floor10(now) }
-
-    fun effectiveTime(now: Long = this.now): Long = customTime(now) ?: floor10(now)
-    fun isNowMode(now: Long = this.now): Boolean = customTime(now) == null
-
-    fun setTime(t: Long) {
-        val n = System.currentTimeMillis()
-        sel = if (t >= floor10(n)) null else t
-        selTouched = n
-    }
-
-    fun pickHour(hourTs: Long) {
-        val m = minuteOf(effectiveTime())
-        setTime(minOf(hourTs + m * MIN, floor10(System.currentTimeMillis())))
-    }
-
-    fun resetTime() { sel = null }
-
-    /** Nudge the selected time by ±minutes (from "now" when nothing custom is picked). */
-    fun shiftTime(minutes: Int) {
-        setTime(effectiveTime(System.currentTimeMillis()) + minutes * MIN)
-    }
-
     // ------------------------------------------------------------ events
 
     private fun uid() = System.currentTimeMillis().toString(36) + Random.nextLong(1L shl 40).toString(36)
 
-    fun log(type: String): Event {
+    /** Step 2 of logging: type was picked, [t] confirmed (plus optional feed details). */
+    fun log(type: String, t: Long, side: String? = null, ml: Int? = null): Event {
         val n = System.currentTimeMillis()
-        val e = Event(id = uid(), type = type, t = effectiveTime(n), by = cfg.me, created = n, updated = n)
-        if (customTime(n) != null) selTouched = n
+        val e = Event(id = uid(), type = type, t = t, by = cfg.me, created = n, updated = n,
+            side = side, ml = if (side == "bottle") ml else null)
         putEvent(e)
+        undoNote = UndoNote(e)
         return e
     }
 
@@ -232,7 +208,6 @@ class AppController(private val store: Store?, private val scope: CoroutineScope
 
     fun onResume() {
         now = System.currentTimeMillis()
-        resetTime()
         syncNow()
         pollJob?.cancel()
         pollJob = scope.launch {

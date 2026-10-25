@@ -38,7 +38,7 @@ class Strings(val lang: String) {
                 "errEmpty" to "The repository is empty — add any file first", "errForbidden" to "Token lacks Contents: write, or rate limit hit",
                 "errOffline" to "No connection", "errConflict" to "Busy, will retry", "errBad" to "Unexpected reply",
                 "data" to "Data", "export" to "Export CSV", "version" to "Version",
-                "late" to "due",
+                "late" to "due", "when" to "When?", "logAt" to "Log at", "customTime" to "Pick time", "whatNow" to "What happened?",
             ),
             "pl" to mapOf(
                 "tagline" to "Jedz · Przetwarzaj · Ładuj",
@@ -69,7 +69,7 @@ class Strings(val lang: String) {
                 "errEmpty" to "Repozytorium jest puste — dodaj dowolny plik", "errForbidden" to "Brak uprawnienia Contents: write lub limit zapytań",
                 "errOffline" to "Brak połączenia", "errConflict" to "Zajęte, spróbuję ponownie", "errBad" to "Nieoczekiwana odpowiedź",
                 "data" to "Dane", "export" to "Eksport CSV", "version" to "Wersja",
-                "late" to "pora",
+                "late" to "pora", "when" to "Kiedy?", "logAt" to "Zapisz o", "customTime" to "Wybierz godzinę", "whatNow" to "Co się stało?",
             ),
             "uk" to mapOf(
                 "tagline" to "Їж · Перетворюй · Завантажуй",
@@ -100,7 +100,7 @@ class Strings(val lang: String) {
                 "errEmpty" to "Репозиторій порожній — додайте будь-який файл", "errForbidden" to "Немає права Contents: write або ліміт запитів",
                 "errOffline" to "Немає зʼєднання", "errConflict" to "Зайнято, повторю", "errBad" to "Неочікувана відповідь",
                 "data" to "Дані", "export" to "Експорт CSV", "version" to "Версія",
-                "late" to "час",
+                "late" to "час", "when" to "Коли?", "logAt" to "Записати о", "customTime" to "Обрати час", "whatNow" to "Що сталося?",
             ),
         )
     }

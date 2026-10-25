@@ -1,13 +1,7 @@
 package com.grebeniuk.babylog
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -22,14 +16,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
@@ -65,14 +58,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
+/** Step 1: pick what happened (big buttons docked at the bottom). History and "time since" above. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainScreen(c: AppController, onSettings: () -> Unit) {
+fun MainScreen(c: AppController, onSettings: () -> Unit, onPick: (String) -> Unit) {
     val s = LocalStrings.current
     val view = LocalView.current
     val snack = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    var feedFor by remember { mutableStateOf<String?>(null) }
     var editId by remember { mutableStateOf<String?>(null) }
     var whoOpen by remember { mutableStateOf(false) }
     var daysShown by remember { mutableIntStateOf(7) }
@@ -89,18 +82,20 @@ fun MainScreen(c: AppController, onSettings: () -> Unit) {
         }
     }
 
-    fun log(type: String) {
-        view.tick()
-        val e = c.log(type)
-        showUndo("${s[type]} · ${hhmm(e.t)}") { c.delete(e.id) }
-        if (type == Kind.FEED) feedFor = e.id
+    // coming back from step 2: offer Undo once
+    val note = c.undoNote
+    LaunchedEffect(note) {
+        if (note != null && !note.shown) {
+            note.shown = true
+            val e = note.event
+            showUndo("${s["logged"]}: ${s[e.type]} · ${hhmm(e.t)}") { c.delete(e.id) }
+        }
     }
 
     Scaffold(
         topBar = { TopBar(c, onWho = { whoOpen = true }, onSettings = onSettings) },
-        snackbarHost = {
-            SnackbarHost(snack) { Snackbar(it, shape = RoundedCornerShape(16.dp)) }
-        },
+        bottomBar = { TypePad { view.tick(); onPick(it) } },
+        snackbarHost = { SnackbarHost(snack) { Snackbar(it, shape = RoundedCornerShape(16.dp)) } },
         containerColor = MaterialTheme.colorScheme.background,
     ) { pad ->
         LazyColumn(
@@ -108,13 +103,11 @@ fun MainScreen(c: AppController, onSettings: () -> Unit) {
             contentPadding = PaddingValues(
                 start = 16.dp, end = 16.dp,
                 top = pad.calculateTopPadding() + 4.dp,
-                bottom = pad.calculateBottomPadding() + 32.dp,
+                bottom = pad.calculateBottomPadding() + 16.dp,
             ),
         ) {
-            item(key = "time") { TimeCard(c, now) }
-            item(key = "actions") { ActionGrid(Modifier.padding(top = 12.dp)) { log(it) } }
-            item(key = "since") { SinceRow(events, now, Modifier.padding(top = 12.dp)) }
-            item(key = "histTitle") { SectionTitle(s["history"], Modifier.padding(top = 6.dp)) }
+            item(key = "since") { SinceRow(events, now) }
+            item(key = "histTitle") { SectionTitle(s["history"], Modifier.padding(top = 4.dp)) }
             if (events.isEmpty()) {
                 item(key = "empty") {
                     Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -127,11 +120,8 @@ fun MainScreen(c: AppController, onSettings: () -> Unit) {
             days.take(daysShown).forEach { (day, items) ->
                 stickyHeader(key = "h$day") { DayHeader(day, items, now) }
                 itemsIndexed(items, key = { _, e -> e.id }) { i, e ->
-                    EventRow(
-                        c, e, first = i == 0, last = i == items.lastIndex,
-                        onClick = { editId = e.id },
-                        modifier = Modifier.animateItem(),
-                    )
+                    EventRow(c, e, first = i == 0, last = i == items.lastIndex,
+                        onClick = { editId = e.id }, modifier = Modifier.animateItem())
                 }
             }
             if (days.size > daysShown) {
@@ -144,10 +134,9 @@ fun MainScreen(c: AppController, onSettings: () -> Unit) {
         }
     }
 
-    feedFor?.let { id -> FeedSheet(c, id) { feedFor = null } }
     editId?.let { id ->
         EditSheet(c, id, onDone = { editId = null }, onDeleted = { e ->
-            showUndo("${s["deleted"]} · ${s[e.type]} ${hhmm(e.t)}") { c.restore(e.id) }
+            showUndo("${s["deleted"]}: ${s[e.type]} · ${hhmm(e.t)}") { c.restore(e.id) }
         })
     }
     if (whoOpen) WhoSheet(c) { whoOpen = false }
@@ -182,112 +171,69 @@ private fun TopBar(c: AppController, onWho: () -> Unit, onSettings: () -> Unit) 
     }
 }
 
+/** The four big type buttons, docked at the bottom where the thumb is. */
 @Composable
-private fun TimeCard(c: AppController, now: Long) {
+private fun TypePad(onPick: (String) -> Unit) {
     val s = LocalStrings.current
-    val cs = MaterialTheme.colorScheme
-    val ts = c.effectiveTime(now)
-    val isNow = c.isNowMode(now)
-    val hourList = rememberLazyListState()
-    LaunchedEffect(isNow) { if (isNow) hourList.animateScrollToItem(0) }
-
-    Surface(shape = RoundedCornerShape(30.dp), color = cs.surfaceContainerLow, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                AnimatedContent(
-                    targetState = hhmm(ts),
-                    transitionSpec = {
-                        (slideInVertically { it / 3 } + fadeIn()) togetherWith (slideOutVertically { -it / 3 } + fadeOut())
-                    },
-                    label = "bigTime",
-                ) { txt ->
-                    Text(txt, fontSize = 54.sp, fontWeight = FontWeight.Black, letterSpacing = (-1.5).sp, style = Tnum)
-                }
-                Spacer(Modifier.width(14.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(if (isNow) s["now"] else dayLabel(ts, now, s),
-                        style = MaterialTheme.typography.titleMedium, color = if (isNow) cs.primary else cs.onSurface)
-                    Text(if (isNow) dayLabel(ts, now, s) else agoText(now - ts, s),
-                        style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
-                }
-                Pill(s["now"], selected = isNow, onClick = { c.resetTime() }, fontSize = 15,
-                    modifier = Modifier.height(40.dp).width(76.dp))
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+    ) {
+        Column(
+            Modifier.navigationBarsPadding().padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(s["whatNow"], style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                TypeButton(Kind.PEE, 112, Modifier.weight(1f), onPick)
+                TypeButton(Kind.POOP, 112, Modifier.weight(1f), onPick)
             }
-            Spacer(Modifier.height(14.dp))
-            QuickShift(canForward = !isNow) { d -> c.shiftTime(d) }
-            Spacer(Modifier.height(8.dp))
-            LazyRow(state = hourList, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(24) { i ->
-                    val h = hourStart(now) - i * HOUR
-                    Pill(
-                        two(hourOf(h)),
-                        selected = h == hourStart(ts),
-                        onClick = { c.pickHour(h) },
-                        sub = if (dayStart(h) != dayStart(now)) s["yest"] else null,
-                        modifier = Modifier.size(width = 54.dp, height = 54.dp),
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (m in 0..50 step 10) {
-                    val t = hourStart(ts) + m * MIN
-                    Pill(
-                        ":" + two(m),
-                        selected = t == ts,
-                        enabled = t <= now,
-                        onClick = { c.setTime(t) },
-                        modifier = Modifier.weight(1f).height(48.dp),
-                    )
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                TypeButton(Kind.BOTH, 88, Modifier.weight(1f), onPick)
+                TypeButton(Kind.FEED, 88, Modifier.weight(1f), onPick)
             }
         }
     }
 }
 
 @Composable
-private fun ActionGrid(modifier: Modifier, onLog: (String) -> Unit) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            ActionTile(Kind.PEE, true, Modifier.weight(1f), onLog)
-            ActionTile(Kind.POOP, true, Modifier.weight(1f), onLog)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            ActionTile(Kind.BOTH, false, Modifier.weight(1f), onLog)
-            ActionTile(Kind.FEED, false, Modifier.weight(1f), onLog)
-        }
-    }
-}
-
-@Composable
-private fun ActionTile(type: String, big: Boolean, modifier: Modifier, onLog: (String) -> Unit) {
+private fun TypeButton(type: String, height: Int, modifier: Modifier, onPick: (String) -> Unit) {
     val s = LocalStrings.current
     val cat = LocalCats.current.of(type)
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) 0.94f else 1f, spring(dampingRatio = 0.45f, stiffness = 700f), label = "press")
+    val scale by animateFloatAsState(if (pressed) 0.95f else 1f, spring(dampingRatio = 0.45f, stiffness = 700f), label = "press")
     Surface(
-        onClick = { onLog(type) },
+        onClick = { onPick(type) },
         interactionSource = interaction,
-        shape = RoundedCornerShape(30.dp),
+        shape = RoundedCornerShape(28.dp),
         color = cat.container,
-        border = BorderStroke(1.5.dp, cat.accent.copy(alpha = 0.28f)),
-        modifier = modifier.height(if (big) 132.dp else 100.dp).graphicsLayer { scaleX = scale; scaleY = scale },
+        border = BorderStroke(1.5.dp, cat.accent.copy(alpha = 0.3f)),
+        modifier = modifier.height(height.dp).graphicsLayer { scaleX = scale; scaleY = scale },
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            KindIcon(type, cat.accent, if (big) 46.dp else 32.dp)
-            Spacer(Modifier.height(4.dp))
-            Text(s[type], fontSize = if (big) 19.sp else 17.sp, fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface)
+        if (height >= 100) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                KindIcon(type, cat.accent, 44.dp)
+                Spacer(Modifier.height(6.dp))
+                Text(s[type], fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            }
+        } else {
+            Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                KindIcon(type, cat.accent, 32.dp)
+                Spacer(Modifier.width(10.dp))
+                Text(s[type], fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
 }
 
 @Composable
-private fun SinceRow(events: List<Event>, now: Long, modifier: Modifier) {
+private fun SinceRow(events: List<Event>, now: Long) {
     val s = LocalStrings.current
     val t0 = dayStart(now)
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         SinceTile(Kind.FEED, s["feed"], events, now, t0, 3, Modifier.weight(1f)) { it.isFeed }
         SinceTile(Kind.PEE, s["pee"], events, now, t0, 0, Modifier.weight(1f)) { it.isPee }
         SinceTile(Kind.POOP, s["poop"], events, now, t0, 0, Modifier.weight(1f)) { it.isPoop }
@@ -330,17 +276,24 @@ private fun DayHeader(day: Long, items: List<Event>, now: Long) {
     val s = LocalStrings.current
     val feeds = items.count { it.isFeed }
     val ml = items.sumOf { if (it.isFeed) it.ml ?: 0 else 0 }
-    val pee = items.count { it.isPee }
-    val poop = items.count { it.isPoop }
     Row(
         Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)
             .padding(start = 6.dp, end = 6.dp, top = 14.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.Bottom,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(dayLabel(day, now, s), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
         Total(Kind.FEED, "$feeds" + if (ml > 0) " · $ml ${s["ml"]}" else "")
-        Total(Kind.PEE, "$pee")
-        Total(Kind.POOP, "$poop")
+        Total(Kind.PEE, "${items.count { it.isPee }}")
+        Total(Kind.POOP, "${items.count { it.isPoop }}")
+    }
+}
+
+@Composable
+private fun Total(type: String, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
+        KindIcon(type, LocalCats.current.of(type).accent, 14.dp)
+        Spacer(Modifier.width(3.dp))
+        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -365,10 +318,10 @@ private fun EventRow(c: AppController, e: Event, first: Boolean, last: Boolean, 
         onClick = onClick, shape = shape, color = MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = modifier.fillMaxWidth().padding(bottom = 3.dp),
     ) {
-        Row(Modifier.padding(horizontal = 14.dp, vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(hhmm(e.t), fontWeight = FontWeight.Bold, fontSize = 16.sp, style = Tnum, modifier = Modifier.width(54.dp))
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(hhmm(e.t), fontWeight = FontWeight.Bold, fontSize = 17.sp, style = Tnum, modifier = Modifier.width(56.dp))
             Box(
-                Modifier.size(40.dp).clip(RoundedCornerShape(13.dp)).background(cat.container),
+                Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(cat.container),
                 contentAlignment = Alignment.Center,
             ) { KindIcon(e.type, cat.accent, if (e.type == Kind.BOTH) 17.dp else 22.dp) }
             Spacer(Modifier.width(12.dp))
@@ -381,33 +334,6 @@ private fun EventRow(c: AppController, e: Event, first: Boolean, last: Boolean, 
                 }
             }
             Avatar(p, c.profileName(p, s), 26.dp)
-        }
-    }
-}
-
-@Composable
-private fun Total(type: String, text: String) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
-        KindIcon(type, LocalCats.current.of(type).accent, 14.dp)
-        Spacer(Modifier.width(3.dp))
-        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-/** −15 / −10 / +10 / +15 minute nudges. */
-@Composable
-fun QuickShift(canForward: Boolean, onShift: (Int) -> Unit) {
-    val s = LocalStrings.current
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        listOf(-15, -10, 10, 15).forEach { d ->
-            Pill(
-                if (d < 0) "\u2212${-d}" else "+$d",
-                selected = false,
-                enabled = d < 0 || canForward,
-                onClick = { onShift(d) },
-                sub = s["min"],
-                modifier = Modifier.weight(1f).height(50.dp),
-            )
         }
     }
 }
