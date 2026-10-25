@@ -1,5 +1,11 @@
 package com.grebeniuk.babylog
 
+import androidx.compose.material3.Surface
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -44,8 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
-val ML_PRESETS = listOf(30, 40, 50, 60)
-const val ML_STEP = 5
+const val ML_DEFAULT = 60
+const val ML_MIN = 5
 const val ML_MAX = 90
 
 fun sideLabel(side: String?, s: Strings): String? = when (side) {
@@ -127,31 +133,32 @@ fun SideOptions(selected: String?, onPick: (String) -> Unit) {
     }
 }
 
-/** 30/40/50/60 presets + −5/+5 stepper (5…90 ml). [onPreset] lets the log flow jump ahead on a preset tap. */
+/** −10 / −5 / +5 / +10 ml buttons (5…90 ml). Optional value shown in the middle. */
 @Composable
-fun AmountPicker(ml: Int?, onChange: (Int) -> Unit, height: Int = 64, onPreset: (Int) -> Unit = onChange) {
+fun AmountStepper(ml: Int, onChange: (Int) -> Unit, height: Int = 52, showValue: Boolean = false) {
     val s = LocalStrings.current
-    val base = ml ?: 40
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            ML_PRESETS.forEach { m ->
-                Pill("$m", selected = ml == m, onClick = { onPreset(m) }, sub = s["ml"],
-                    fontSize = if (height >= 72) 26 else 20, modifier = Modifier.weight(1f).height(height.dp))
-            }
+    @Composable
+    fun Btn(d: Int, m: Modifier) {
+        val target = (ml + d).coerceIn(ML_MIN, ML_MAX)
+        Pill(
+            if (d < 0) "\u2212${-d}" else "+$d",
+            selected = false,
+            enabled = target != ml,
+            onClick = { onChange(target) },
+            sub = s["ml"],
+            fontSize = if (height >= 64) 24 else 18,
+            modifier = m.height(height.dp),
+        )
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Btn(-10, Modifier.weight(1f))
+        Btn(-5, Modifier.weight(1f))
+        if (showValue) {
+            Text("$ml ${s["ml"]}", fontSize = 22.sp, fontWeight = FontWeight.Black, style = Tnum,
+                textAlign = TextAlign.Center, maxLines = 1, modifier = Modifier.weight(1.3f))
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Pill("\u2212$ML_STEP", selected = false, enabled = base > ML_STEP,
-                onClick = { onChange((base - ML_STEP).coerceIn(ML_STEP, ML_MAX)) },
-                sub = s["ml"], fontSize = 22, modifier = Modifier.weight(1f).height(height.dp))
-            Text(
-                if (ml != null) "$ml ${s["ml"]}" else "\u2014",
-                fontSize = 30.sp, fontWeight = FontWeight.Black, style = Tnum, textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1.3f),
-            )
-            Pill("+$ML_STEP", selected = false, enabled = base < ML_MAX,
-                onClick = { onChange((base + ML_STEP).coerceIn(ML_STEP, ML_MAX)) },
-                sub = s["ml"], fontSize = 22, modifier = Modifier.weight(1f).height(height.dp))
-        }
+        Btn(5, Modifier.weight(1f))
+        Btn(10, Modifier.weight(1f))
     }
 }
 
@@ -164,6 +171,7 @@ fun EditSheet(c: AppController, id: String, onDone: () -> Unit, onDeleted: (Even
     if (orig == null) { LaunchedEffect(id) { onDone() }; return }
     var e by remember(id) { mutableStateOf(orig) }
     var note by remember(id) { mutableStateOf(orig.note.orEmpty()) }
+    var pickTime by remember(id) { mutableStateOf(false) }
     val now = c.now
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
@@ -171,66 +179,82 @@ fun EditSheet(c: AppController, id: String, onDone: () -> Unit, onDeleted: (Even
     val cap = floor10(System.currentTimeMillis())
 
     ModalBottomSheet(onDismissRequest = onDone, sheetState = state) {
-        Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
-            Text(s["edit"], style = MaterialTheme.typography.titleLarge)
-
-            SectionTitle(s["type"])
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Kind.all.chunked(2).forEach { pair ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        pair.forEach { t ->
-                            BigOption(s[t], e.type == t, {
-                                e = if (t == Kind.FEED) e.copy(type = t) else e.copy(type = t, side = null, ml = null)
-                            }, Modifier.weight(1f), kind = t)
+        Column(Modifier.padding(horizontal = 16.dp).padding(bottom = 12.dp)) {
+            // Content is compact enough to fit; it only scrolls if the hour grid is opened on a small phone.
+            Column(
+                Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                // type: 4 icon toggles
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Kind.all.forEach { k ->
+                        val kc = LocalCats.current.of(k)
+                        Surface(
+                            onClick = {
+                                e = if (k == Kind.FEED) e.copy(type = k, side = "bottle", ml = e.ml ?: c.lastFeedMl())
+                                else e.copy(type = k, side = null, ml = null)
+                            },
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (e.type == k) kc.container else cs.surfaceContainerHigh,
+                            border = if (e.type == k) BorderStroke(2.dp, kc.accent) else null,
+                            modifier = Modifier.weight(1f).height(52.dp),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                KindIcon(k, if (e.type == k) kc.accent else cs.onSurfaceVariant, if (k == Kind.BOTH) 18.dp else 24.dp)
+                            }
                         }
                     }
                 }
-            }
 
-            SectionTitle("${s["time"]} · ${hhmm(e.t)}")
-            Nudges(e.t < cap) { d -> e = e.copy(t = minOf(e.t + d * MIN, cap)) }
-            Spacer(Modifier.height(10.dp))
-            TimeGrid(e.t, now) { v -> e = e.copy(t = v) }
-
-            if (e.type == Kind.FEED) {
-                SectionTitle(s["feed"])
-                AmountPicker(e.ml, onChange = { m -> e = e.copy(side = "bottle", ml = m) })
-                Spacer(Modifier.height(10.dp))
-                SideOptions(e.side) { side -> e = e.copy(side = side, ml = if (side == "bottle") e.ml else null) }
-            }
-
-            SectionTitle(s["note"])
-            OutlinedTextField(
-                value = note, onValueChange = { note = it },
-                placeholder = { Text(s["notePh"]) },
-                shape = RoundedCornerShape(16.dp), maxLines = 3,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            SectionTitle(s["by"])
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                c.db.liveProfiles().forEach { p ->
-                    val n = c.profileName(p, s)
-                    Pill(n, selected = e.by == p.id, onClick = { e = e.copy(by = p.id) }, fontSize = 15,
-                        modifier = Modifier.height(48.dp), leading = { Avatar(p, n, 26.dp) })
+                // time: value + day, nudges, optional full grid
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(hhmm(e.t), fontSize = 40.sp, fontWeight = FontWeight.Black, style = Tnum)
+                    Spacer(Modifier.width(10.dp))
+                    Text(dayLabel(e.t, now, s), style = MaterialTheme.typography.titleMedium, color = cs.onSurfaceVariant,
+                        modifier = Modifier.weight(1f))
+                    Pill(s["customTime"], selected = pickTime, onClick = { pickTime = !pickTime }, fontSize = 15,
+                        modifier = Modifier.height(44.dp), leading = { Icon(Icons.Outlined.Schedule, null) })
                 }
+                Nudges(e.t < cap, height = 52) { d -> e = e.copy(t = minOf(e.t + d * MIN, cap)) }
+                if (pickTime) TimeGrid(e.t, now) { v -> e = e.copy(t = v) }
+
+                // feed amount (bottle only)
+                if (e.type == Kind.FEED) {
+                    AmountStepper(e.ml ?: c.lastFeedMl(), onChange = { m -> e = e.copy(side = "bottle", ml = m) },
+                        height = 52, showValue = true)
+                }
+
+                // who
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    c.db.liveProfiles().forEach { p ->
+                        val n = c.profileName(p, s)
+                        Pill(n, selected = e.by == p.id, onClick = { e = e.copy(by = p.id) }, fontSize = 14,
+                            modifier = Modifier.weight(1f).height(44.dp), leading = { Avatar(p, n, 22.dp) })
+                    }
+                }
+
+                OutlinedTextField(
+                    value = note, onValueChange = { note = it },
+                    placeholder = { Text(s["notePh"]) }, singleLine = true,
+                    shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth(),
+                )
             }
 
-            Spacer(Modifier.height(24.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TextButton(
+            // actions: always visible
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = 14.dp)) {
+                OutlinedButton(
                     onClick = { val d = orig; c.delete(d.id); close { onDeleted(d) } },
-                    colors = ButtonDefaults.textButtonColors(contentColor = cs.error),
-                ) {
-                    Icon(Icons.Outlined.Delete, null); Spacer(Modifier.width(6.dp)); Text(s["del"])
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = cs.error),
+                    modifier = Modifier.weight(1f).height(56.dp),
+                ) { Icon(Icons.Outlined.Delete, null); Spacer(Modifier.width(4.dp)); Text(s["del"], maxLines = 1) }
+                FilledTonalButton(onClick = { close() }, modifier = Modifier.weight(1f).height(56.dp)) {
+                    Text(s["cancel"], maxLines = 1)
                 }
-                Spacer(Modifier.weight(1f))
-                TextButton(onClick = { close() }) { Text(s["cancel"]) }
-                Spacer(Modifier.width(8.dp))
                 Button(onClick = {
                     c.update(e.copy(note = note.trim().ifEmpty { null }))
                     close()
-                }, modifier = Modifier.height(52.dp)) { Text(s["save"], fontWeight = FontWeight.Bold) }
+                }, modifier = Modifier.weight(1f).height(56.dp)) { Text(s["save"], fontWeight = FontWeight.Bold, maxLines = 1) }
             }
         }
     }

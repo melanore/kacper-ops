@@ -10,6 +10,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.github.takahirom.roborazzi.captureScreenRoboImage
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import kotlinx.coroutines.MainScope
 import org.junit.Rule
 import org.junit.Test
@@ -66,5 +68,22 @@ class ScreenshotTest {
     @Test fun feedAmount() { val c = sample(); shot("4_feed_amount_light", false) { LogScreen(c, Kind.FEED, {}) } }
     @Test fun feedTimeCustomPl() { val c = sample(); shot("4b_feed_time_custom_pl", false, "pl") { LogScreen(c, Kind.FEED, {}, startCustom = true, startOnTime = true) } }
     @Test fun settingsDark() { val c = sample(); shot("5_settings_dark", true) { SettingsScreen(c) {} } }
+    @OptIn(ExperimentalRoborazziApi::class)
+    @Test fun editFeedSheet() {
+        val c = sample()
+        val id = c.db.liveEvents().first { it.isFeed && it.ml != null }.id
+        rule.setContent {
+            AppTheme(dark = false, dynamic = false) {
+                CompositionLocalProvider(LocalStrings provides Strings("en")) {
+                    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                        MainScreen(c, {}, {})
+                        EditSheet(c, id, {}, {})
+                    }
+                }
+            }
+        }
+        rule.waitForIdle()
+        captureScreenRoboImage("screenshots/7_edit_feed.png")
+    }
     @Test fun welcomeLight() { val c = sample(false); shot("6_welcome_uk", false, "uk") { WelcomeScreen(c) } }
 }

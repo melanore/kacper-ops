@@ -67,6 +67,9 @@ class AppController(private val store: Store?, private val scope: CoroutineScope
         return e
     }
 
+    /** Amount of the most recent bottle feed, or 60 ml the first time. */
+    fun lastFeedMl(): Int = db.liveEvents().firstOrNull { it.isFeed && it.ml != null }?.ml ?: ML_DEFAULT
+
     fun update(e: Event) = putEvent(e)
     fun delete(id: String) { db.events[id]?.let { putEvent(it.copy(deleted = true)) } }
     fun restore(id: String) { db.events[id]?.let { putEvent(it.copy(deleted = false)) } }

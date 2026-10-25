@@ -71,8 +71,8 @@ fun LogScreen(
     startOnTime: Boolean = false,
 ) {
     var type by remember { mutableStateOf(initialType) }
-    val lastMl = remember { c.db.liveEvents().firstOrNull { it.isFeed && it.ml != null }?.ml }
-    var ml by remember { mutableStateOf(if (startOnTime) lastMl else null) }
+    val lastMl = remember { c.lastFeedMl() }
+    var ml by remember { mutableStateOf<Int?>(lastMl) }
     var amountDone by remember { mutableStateOf(startOnTime) }
     val onAmount = type == Kind.FEED && !amountDone
 
@@ -88,7 +88,7 @@ fun LogScreen(
         label = "logStep",
     ) { amountStep ->
         if (amountStep) {
-            AmountStep(lastMl, onBack = { back() }) { picked -> ml = picked; amountDone = true }
+            AmountStep(ml ?: lastMl, onBack = { back() }) { picked -> ml = picked; amountDone = true }
         } else {
             TimeStep(
                 c, type, ml, startCustom,
@@ -140,13 +140,13 @@ private fun StepScaffold(
     }
 }
 
-/** Feed step 2: how many ml. A preset tap goes straight on to the time step. */
+/** Feed step 2: how many ml. Starts at the last amount (60 ml the first time); ±10 / ±5, then Next. */
 @Composable
-private fun AmountStep(lastMl: Int?, onBack: () -> Unit, onPicked: (Int?) -> Unit) {
+private fun AmountStep(start: Int, onBack: () -> Unit, onPicked: (Int) -> Unit) {
     val s = LocalStrings.current
     val cs = MaterialTheme.colorScheme
     val view = LocalView.current
-    var ml by remember { mutableStateOf(lastMl ?: 40) }
+    var ml by remember { mutableStateOf(start) }
 
     StepScaffold(
         type = Kind.FEED, title = s["feed"], onBack = onBack,
@@ -162,22 +162,14 @@ private fun AmountStep(lastMl: Int?, onBack: () -> Unit, onPicked: (Int?) -> Uni
             Column(Modifier.padding(vertical = 18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(s["howMuch"].uppercase(), style = MaterialTheme.typography.labelLarge,
                     color = cs.onSurfaceVariant, letterSpacing = 1.sp)
-                Text("$ml", fontSize = 84.sp, fontWeight = FontWeight.Black, letterSpacing = (-2).sp, style = Tnum)
-                Text(
-                    s["ml"] + (lastMl?.let { "  ·  ${s["lastAmount"]}: $it ${s["ml"]}" } ?: ""),
-                    style = MaterialTheme.typography.titleMedium, color = cs.onSurfaceVariant,
-                )
+                AnimatedContent(targetState = ml, label = "ml") { v ->
+                    Text("$v", fontSize = 96.sp, fontWeight = FontWeight.Black, letterSpacing = (-2).sp, style = Tnum)
+                }
+                Text(s["ml"], style = MaterialTheme.typography.titleMedium, color = cs.onSurfaceVariant)
             }
         }
         Spacer(Modifier.height(12.dp))
-        AmountPicker(
-            ml, height = 76,
-            onChange = { view.tick(); ml = it },
-            onPreset = { view.tick(); ml = it; onPicked(it) },
-        )
-        TextButton(onClick = { onPicked(null) }, modifier = Modifier.align(Alignment.End).padding(top = 4.dp)) {
-            Text(s["noAmount"])
-        }
+        AmountStepper(ml, onChange = { view.tick(); ml = it }, height = 80)
     }
 }
 
