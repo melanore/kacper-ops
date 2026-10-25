@@ -32,7 +32,7 @@ class ScreenshotTest {
         val c = AppController(null, MainScope())
         if (!withData) return c
         c.setMe("p-dad")
-        c.renameProfile("p-dad", "Max")
+        c.renameProfile("p-dad", "Max") // already the default
         val n = System.currentTimeMillis()
         fun add(type: String, minutesAgo: Long, by: String = "p-dad", side: String? = null, ml: Int? = null) {
             val e = c.log(type, floor10(n - minutesAgo * MIN), side, ml)

@@ -87,8 +87,8 @@ data class Profile(
         }.getOrNull()
 
         val seeds = listOf(
-            Profile("p-dad", "dad", "", 1, PALETTE[0]),
-            Profile("p-mom", "mom", "", 2, PALETTE[1]),
+            Profile("p-dad", "dad", "Max", 1, PALETTE[0]),
+            Profile("p-mom", "mom", "Paulina", 2, PALETTE[1]),
             Profile("p-other", "other", "", 3, PALETTE[2]),
         )
     }
@@ -98,9 +98,14 @@ data class Db(
     val events: Map<String, Event> = emptyMap(),
     val profiles: Map<String, Profile> = emptyMap(),
 ) {
+    /** Adds the default people if missing, and names untouched defaults Max / Paulina (no "Dad" / "Mom"). */
     fun withSeeds(): Db {
-        val missing = Profile.seeds.filter { it.id !in profiles }
-        return if (missing.isEmpty()) this else copy(profiles = profiles + missing.associateBy { it.id })
+        val seeded = profiles + Profile.seeds.filter { it.id !in profiles }.associateBy { it.id }
+        val named = seeded.mapValues { (_, p) ->
+            val default = Profile.seeds.firstOrNull { it.id == p.id }?.name.orEmpty()
+            if (p.name.isBlank() && p.updated == 0L && default.isNotEmpty()) p.copy(name = default) else p
+        }
+        return if (named == profiles) this else copy(profiles = named)
     }
 
     fun liveProfiles(): List<Profile> = profiles.values.filter { !it.deleted }.sortedBy { it.order }
