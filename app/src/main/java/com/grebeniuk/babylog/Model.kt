@@ -6,9 +6,10 @@ import java.util.Locale
 object Kind {
     const val PEE = "pee"
     const val POOP = "poop"
+    /** Legacy "pee + poop" type: no longer offered; read back as POOP. */
     const val BOTH = "both"
     const val FEED = "feed"
-    val all = listOf(PEE, POOP, BOTH, FEED)
+    val all = listOf(PEE, POOP, FEED)
 }
 
 /** One logged thing. Field names match the JSON written by v1 of the app. */
@@ -42,7 +43,7 @@ data class Event(
         fun fromJson(o: JSONObject): Event? = runCatching {
             Event(
                 id = o.getString("id"),
-                type = o.optString("type", Kind.PEE).takeIf { it in Kind.all } ?: Kind.PEE,
+                type = o.optString("type", Kind.PEE).let { if (it == Kind.BOTH) Kind.POOP else it }.takeIf { it in Kind.all } ?: Kind.PEE,
                 t = o.getLong("t"),
                 by = o.optStr("by"),
                 created = o.optLong("created", o.optLong("t")),

@@ -189,10 +189,7 @@ private fun TypePad(onPick: (String) -> Unit) {
                 TypeButton(Kind.PEE, 112, Modifier.weight(1f), onPick)
                 TypeButton(Kind.POOP, 112, Modifier.weight(1f), onPick)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                TypeButton(Kind.BOTH, 88, Modifier.weight(1f), onPick)
-                TypeButton(Kind.FEED, 88, Modifier.weight(1f), onPick)
-            }
+            TypeButton(Kind.FEED, 96, Modifier.fillMaxWidth(), onPick)
         }
     }
 }

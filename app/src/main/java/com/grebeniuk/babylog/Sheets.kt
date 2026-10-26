@@ -64,10 +64,10 @@ fun sideLabel(side: String?, s: Strings): String? = when (side) {
 
 /** −15 / −10 / +10 / +15 minute nudges. */
 @Composable
-fun Nudges(canForward: Boolean, height: Int = 52, onShift: (Int) -> Unit) {
+fun Nudges(canForward: Boolean, height: Int = 52, steps: List<Int> = listOf(-15, -10, 10, 15), onShift: (Int) -> Unit) {
     val s = LocalStrings.current
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        listOf(-15, -10, 10, 15).forEach { d ->
+        steps.forEach { d ->
             Pill(
                 if (d < 0) "−${-d}" else "+$d",
                 selected = false,
@@ -215,7 +215,7 @@ fun EditSheet(c: AppController, id: String, onDone: () -> Unit, onDeleted: (Even
                     Pill(s["customTime"], selected = pickTime, onClick = { pickTime = !pickTime }, fontSize = 15,
                         modifier = Modifier.height(44.dp), leading = { Icon(Icons.Outlined.Schedule, null) })
                 }
-                Nudges(e.t < cap, height = 52) { d -> e = e.copy(t = minOf(e.t + d * MIN, cap)) }
+                Nudges(e.t < cap, height = 52, steps = listOf(-10, -5, 5, 10)) { d -> e = e.copy(t = minOf(e.t + d * MIN, cap)) }
                 if (pickTime) TimeGrid(e.t, now) { v -> e = e.copy(t = v) }
 
                 // feed amount (bottle only)

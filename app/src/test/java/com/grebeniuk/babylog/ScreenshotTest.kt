@@ -40,7 +40,7 @@ class ScreenshotTest {
         }
         add(Kind.FEED, 25, side = "L")
         add(Kind.PEE, 40, by = "p-mom")
-        add(Kind.BOTH, 130)
+        add(Kind.POOP, 130)
         add(Kind.FEED, 190, by = "p-mom", side = "bottle", ml = 60)
         add(Kind.PEE, 260)
         add(Kind.FEED, 340, side = "R")
