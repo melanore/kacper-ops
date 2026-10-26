@@ -62,9 +62,9 @@ fun sideLabel(side: String?, s: Strings): String? = when (side) {
     else -> null
 }
 
-/** −15 / −10 / +10 / +15 minute nudges. */
+/** −10 / −5 / +5 / +10 minute nudges. */
 @Composable
-fun Nudges(canForward: Boolean, height: Int = 52, steps: List<Int> = listOf(-15, -10, 10, 15), onShift: (Int) -> Unit) {
+fun Nudges(canForward: Boolean, height: Int = 52, steps: List<Int> = listOf(-10, -5, 5, 10), onShift: (Int) -> Unit) {
     val s = LocalStrings.current
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         steps.forEach { d ->
