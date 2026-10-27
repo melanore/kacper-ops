@@ -75,7 +75,8 @@ data class DayStat(val day: Long, val feeds: Int, val ml: Int, val pee: Int, val
 fun dailyStats(events: List<Event>, days: Int?, now: Long): List<DayStat> {
     val today = dayStart(now)
     val first = events.minOfOrNull { dayStart(it.t) } ?: today
-    var d = if (days == null) first else dayStart(plusDays(today, -(days - 1)))
+    // never start before the first entry (no empty days before the baby's log begins)
+    var d = if (days == null) first else maxOf(first, dayStart(plusDays(today, -(days - 1))))
     val byDay = events.groupBy { dayStart(it.t) }
     val out = mutableListOf<DayStat>()
     while (d <= today) {
@@ -214,7 +215,8 @@ private fun ChartCard(title: String, stats: List<DayStat>, color: Color, value: 
                             drawText(t, topLeft = Offset(x + barW / 2 - t.size.width / 2, y - t.size.height))
                         }
                     }
-                    if (i % labelEvery == 0 || i == n - 1) {
+                    val showLabel = (i % labelEvery == 0 && n - 1 - i >= labelEvery) || i == n - 1
+                    if (showLabel) {
                         val t = measurer.measure(shortDate(d.day, s.lang), small)
                         drawText(t, topLeft = Offset((x + barW / 2 - t.size.width / 2).coerceIn(0f, size.width - t.size.width),
                             size.height - t.size.height))

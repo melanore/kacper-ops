@@ -96,12 +96,5 @@ class ScreenshotTest {
         return c
     }
     @Test fun summaryDark() { val c = sampleWeeks(); shot("8_summary_dark", true) { SummaryScreen(c) {} } }
-    @Test fun summaryPdf() {
-        val c = sampleWeeks()
-        val f = writeSummaryPdf(org.robolectric.RuntimeEnvironment.getApplication(), c,
-            dailyStats(c.db.liveEvents(), 14, c.now), 14, Strings("pl"))
-        java.io.File("screenshots").mkdirs()
-        f.copyTo(java.io.File("screenshots/9_summary_pl.pdf"), overwrite = true)
-    }
     @Test fun welcomeLight() { val c = sample(false); shot("6_welcome_uk", false, "uk") { WelcomeScreen(c) } }
 }
