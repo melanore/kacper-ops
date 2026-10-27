@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,7 +62,7 @@ import kotlinx.coroutines.launch
 /** Step 1: pick what happened (big buttons docked at the bottom). History and "time since" above. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainScreen(c: AppController, onSettings: () -> Unit, onPick: (String) -> Unit) {
+fun MainScreen(c: AppController, onSettings: () -> Unit, onPick: (String) -> Unit, onSummary: () -> Unit = {}) {
     val s = LocalStrings.current
     val view = LocalView.current
     val snack = remember { SnackbarHostState() }
@@ -93,7 +94,7 @@ fun MainScreen(c: AppController, onSettings: () -> Unit, onPick: (String) -> Uni
     }
 
     Scaffold(
-        topBar = { TopBar(c, onWho = { whoOpen = true }, onSettings = onSettings) },
+        topBar = { TopBar(c, onWho = { whoOpen = true }, onSettings = onSettings, onSummary = onSummary) },
         bottomBar = { TypePad { view.tick(); onPick(it) } },
         snackbarHost = { SnackbarHost(snack) { Snackbar(it, shape = RoundedCornerShape(16.dp)) } },
         containerColor = MaterialTheme.colorScheme.background,
@@ -143,7 +144,7 @@ fun MainScreen(c: AppController, onSettings: () -> Unit, onPick: (String) -> Uni
 }
 
 @Composable
-private fun TopBar(c: AppController, onWho: () -> Unit, onSettings: () -> Unit) {
+private fun TopBar(c: AppController, onWho: () -> Unit, onSettings: () -> Unit, onSummary: () -> Unit) {
     val s = LocalStrings.current
     val me = c.me()
     Row(
@@ -167,6 +168,7 @@ private fun TopBar(c: AppController, onWho: () -> Unit, onSettings: () -> Unit) 
                 Text(name, fontWeight = FontWeight.SemiBold, maxLines = 1)
             }
         }
+        IconButton(onClick = onSummary) { Icon(Icons.Outlined.BarChart, contentDescription = s["summary"]) }
         IconButton(onClick = onSettings) { Icon(Icons.Outlined.Settings, contentDescription = s["settings"]) }
     }
 }

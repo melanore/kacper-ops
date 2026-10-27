@@ -112,7 +112,7 @@ private fun Root(c: AppController) {
                 (slideInVertically { it / 3 } + fadeIn()) togetherWith fadeOut()
             } else if (initialState.startsWith("log:")) {
                 fadeIn() togetherWith (slideOutVertically { it / 3 } + fadeOut())
-            } else if (targetState == "settings") {
+            } else if (targetState == "settings" || targetState == "summary") {
                 (slideInHorizontally { it / 4 } + fadeIn()) togetherWith (slideOutHorizontally { -it / 8 } + fadeOut())
             } else {
                 (slideInHorizontally { -it / 8 } + fadeIn()) togetherWith (slideOutHorizontally { it / 4 } + fadeOut())
@@ -126,7 +126,8 @@ private fun Root(c: AppController) {
                 BackHandler { screen = "main" }
                 SettingsScreen(c) { screen = "main" }
             }
-            "main" -> MainScreen(c, onSettings = { screen = "settings" }, onPick = { logType = it })
+            "main" -> MainScreen(c, onSettings = { screen = "settings" }, onPick = { logType = it }, onSummary = { screen = "summary" })
+            "summary" -> SummaryScreen(c) { screen = "main" }
             else -> LogScreen(c, scr.removePrefix("log:"), onClose = { logType = null })
         }
     }

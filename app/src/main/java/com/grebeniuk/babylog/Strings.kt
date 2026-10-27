@@ -38,7 +38,7 @@ class Strings(val lang: String) {
                 "errEmpty" to "The repository is empty — add any file first", "errForbidden" to "Token lacks Contents: write, or rate limit hit",
                 "errOffline" to "No connection", "errConflict" to "Busy, will retry", "errBad" to "Unexpected reply",
                 "data" to "Data", "export" to "Export CSV", "version" to "Version",
-                "late" to "due", "when" to "When?", "logAt" to "Log at", "customTime" to "Pick time", "whatNow" to "What happened?", "howMuch" to "How much?", "next" to "Next", "noAmount" to "No amount", "lastAmount" to "Last time",
+                "late" to "due", "when" to "When?", "logAt" to "Log at", "customTime" to "Pick time", "whatNow" to "What happened?", "summary" to "Summary", "sharePdf" to "PDF", "all" to "All", "avgPerDay" to "Average per day", "fullDays" to "full days", "noFullDays" to "No full days yet", "feedsN" to "Feeds", "day" to "day", "date" to "Date", "avgMl" to "ml/feed", "soFar" to "so far", "generated" to "Generated", "howMuch" to "How much?", "next" to "Next", "noAmount" to "No amount", "lastAmount" to "Last time",
             ),
             "pl" to mapOf(
                 "tagline" to "Jedz · Przetwarzaj · Ładuj",
@@ -69,7 +69,7 @@ class Strings(val lang: String) {
                 "errEmpty" to "Repozytorium jest puste — dodaj dowolny plik", "errForbidden" to "Brak uprawnienia Contents: write lub limit zapytań",
                 "errOffline" to "Brak połączenia", "errConflict" to "Zajęte, spróbuję ponownie", "errBad" to "Nieoczekiwana odpowiedź",
                 "data" to "Dane", "export" to "Eksport CSV", "version" to "Wersja",
-                "late" to "pora", "when" to "Kiedy?", "logAt" to "Zapisz o", "customTime" to "Wybierz godzinę", "whatNow" to "Co się stało?", "howMuch" to "Ile?", "next" to "Dalej", "noAmount" to "Bez ilości", "lastAmount" to "Ostatnio",
+                "late" to "pora", "when" to "Kiedy?", "logAt" to "Zapisz o", "customTime" to "Wybierz godzinę", "whatNow" to "Co się stało?", "summary" to "Podsumowanie", "sharePdf" to "PDF", "all" to "Wszystko", "avgPerDay" to "Średnio na dzień", "fullDays" to "pełnych dni", "noFullDays" to "Brak pełnych dni", "feedsN" to "Karmienia", "day" to "dzień", "date" to "Data", "avgMl" to "ml/karm.", "soFar" to "do teraz", "generated" to "Wygenerowano", "howMuch" to "Ile?", "next" to "Dalej", "noAmount" to "Bez ilości", "lastAmount" to "Ostatnio",
             ),
             "uk" to mapOf(
                 "tagline" to "Їж · Перетворюй · Завантажуй",
@@ -100,7 +100,7 @@ class Strings(val lang: String) {
                 "errEmpty" to "Репозиторій порожній — додайте будь-який файл", "errForbidden" to "Немає права Contents: write або ліміт запитів",
                 "errOffline" to "Немає зʼєднання", "errConflict" to "Зайнято, повторю", "errBad" to "Неочікувана відповідь",
                 "data" to "Дані", "export" to "Експорт CSV", "version" to "Версія",
-                "late" to "час", "when" to "Коли?", "logAt" to "Записати о", "customTime" to "Обрати час", "whatNow" to "Що сталося?", "howMuch" to "Скільки?", "next" to "Далі", "noAmount" to "Без кількості", "lastAmount" to "Минулого разу",
+                "late" to "час", "when" to "Коли?", "logAt" to "Записати о", "customTime" to "Обрати час", "whatNow" to "Що сталося?", "summary" to "Підсумок", "sharePdf" to "PDF", "all" to "Усе", "avgPerDay" to "У середньому за день", "fullDays" to "повних днів", "noFullDays" to "Ще немає повних днів", "feedsN" to "Годувань", "day" to "день", "date" to "Дата", "avgMl" to "мл/год.", "soFar" to "поки що", "generated" to "Створено", "howMuch" to "Скільки?", "next" to "Далі", "noAmount" to "Без кількості", "lastAmount" to "Минулого разу",
             ),
         )
     }

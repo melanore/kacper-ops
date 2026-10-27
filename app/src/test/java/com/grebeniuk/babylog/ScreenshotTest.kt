@@ -85,5 +85,15 @@ class ScreenshotTest {
         rule.waitForIdle()
         captureScreenRoboImage("screenshots/7_edit_feed.png")
     }
+    @Test fun summaryDark() {
+        val c = sample()
+        val n = System.currentTimeMillis()
+        for (d in 1..9) for (k in 0 until 7 + d % 3) {
+            val e = c.log(Kind.FEED, floor10(n - d * DAY + k * 3 * HOUR), "bottle", 20 + d * 4 + (k % 3) * 5)
+            if (k % 2 == 0) c.log(Kind.PEE, e.t + 20 * MIN)
+            if (k % 4 == 1) c.log(Kind.POOP, e.t + 40 * MIN)
+        }
+        shot("8_summary_dark", true) { SummaryScreen(c) {} }
+    }
     @Test fun welcomeLight() { val c = sample(false); shot("6_welcome_uk", false, "uk") { WelcomeScreen(c) } }
 }
