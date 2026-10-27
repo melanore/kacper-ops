@@ -85,7 +85,7 @@ class ScreenshotTest {
         rule.waitForIdle()
         captureScreenRoboImage("screenshots/7_edit_feed.png")
     }
-    @Test fun summaryDark() {
+    private fun sampleWeeks(): AppController {
         val c = sample()
         val n = System.currentTimeMillis()
         for (d in 1..9) for (k in 0 until 7 + d % 3) {
@@ -93,7 +93,15 @@ class ScreenshotTest {
             if (k % 2 == 0) c.log(Kind.PEE, e.t + 20 * MIN)
             if (k % 4 == 1) c.log(Kind.POOP, e.t + 40 * MIN)
         }
-        shot("8_summary_dark", true) { SummaryScreen(c) {} }
+        return c
+    }
+    @Test fun summaryDark() { val c = sampleWeeks(); shot("8_summary_dark", true) { SummaryScreen(c) {} } }
+    @Test fun summaryPdf() {
+        val c = sampleWeeks()
+        val f = writeSummaryPdf(org.robolectric.RuntimeEnvironment.getApplication(), c,
+            dailyStats(c.db.liveEvents(), 14, c.now), 14, Strings("pl"))
+        java.io.File("screenshots").mkdirs()
+        f.copyTo(java.io.File("screenshots/9_summary_pl.pdf"), overwrite = true)
     }
     @Test fun welcomeLight() { val c = sample(false); shot("6_welcome_uk", false, "uk") { WelcomeScreen(c) } }
 }
