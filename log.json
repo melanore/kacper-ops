@@ -895,7 +895,8 @@
    "t": 1793160600000,
    "by": "p-dad",
    "created": 1793163651201,
-   "updated": 1793163658985,
+   "updated": 1793166025952,
+   "deleted": true,
    "side": "bottle",
    "ml": 10
   }
