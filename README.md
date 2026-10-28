@@ -22,7 +22,7 @@ the app creates the `data` branch from `main`, so it starts with this history an
 
 ## Using it
 - Time defaults to **now** (24 h, rounded to 10 min), with −10/−5/+5/+10 min buttons. Tap an hour and a `:00–:50` to log something earlier. It snaps back to *Now* after 3 idle minutes.
-- Step 1: tap **Pee / Poop / Pee + Poop / Feed**. *Feed* first asks **how much** (30/40/50/60 ml in one tap, or −5/+5 up to 90 ml).
+- Step 1: tap **Pee / Poop / Pee + Poop / Feed**. *Feed* first asks **how much** (30/40/50/60 ml in one tap, or −5/+5 up to 160 ml).
 - Step 2: confirm the time and tap **Log at …**. Back always goes one step back, and you can switch the type on the time step.
 - Tap any history entry to edit its type, day, time, note or who logged it, or to delete it.
 - Tiles show the time since the last feed / pee / poop. The feed tile turns red after 3 h.

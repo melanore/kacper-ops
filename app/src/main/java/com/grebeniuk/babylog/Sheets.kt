@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
 
 const val ML_DEFAULT = 60
 const val ML_MIN = 5
-const val ML_MAX = 90
+const val ML_MAX = 160
 
 fun sideLabel(side: String?, s: Strings): String? = when (side) {
     "L" -> s["left"]
@@ -133,7 +133,7 @@ fun SideOptions(selected: String?, onPick: (String) -> Unit) {
     }
 }
 
-/** −10 / −5 / +5 / +10 ml buttons (5…90 ml). Optional value shown in the middle. */
+/** −10 / −5 / +5 / +10 ml buttons (5…160 ml). Optional value shown in the middle. */
 @Composable
 fun AmountStepper(ml: Int, onChange: (Int) -> Unit, height: Int = 52, showValue: Boolean = false) {
     val s = LocalStrings.current
