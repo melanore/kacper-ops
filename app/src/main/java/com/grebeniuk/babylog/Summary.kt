@@ -65,6 +65,7 @@ import java.util.Locale
 
 /** Totals for one calendar day. */
 data class DayStat(val day: Long, val feeds: Int, val ml: Int, val pee: Int, val poop: Int) {
+    val diapers: Int get() = pee + poop
     val avgMl: Int get() = if (feeds > 0) Math.round(ml.toDouble() / feeds).toInt() else 0
 }
 
@@ -89,7 +90,9 @@ fun dailyStats(events: List<Event>, days: Int?, now: Long): List<DayStat> {
 }
 
 /** Averages over complete days only (today is still in progress). */
-data class Averages(val days: Int, val ml: Double, val feeds: Double, val pee: Double, val poop: Double)
+data class Averages(val days: Int, val ml: Double, val feeds: Double, val pee: Double, val poop: Double) {
+    val diapers: Double get() = pee + poop
+}
 
 fun averages(stats: List<DayStat>, now: Long): Averages {
     val full = stats.filter { it.day < dayStart(now) }.dropWhile { it.feeds + it.pee + it.poop == 0 }
@@ -158,6 +161,7 @@ fun SummaryScreen(c: AppController, onBack: () -> Unit) {
                             AvgCell(Kind.FEED, fmt1(avg.feeds), s["feedsN"], Modifier.weight(1f))
                             AvgCell(Kind.PEE, fmt1(avg.pee), s["pee"], Modifier.weight(1f))
                             AvgCell(Kind.POOP, fmt1(avg.poop), s["poop"], Modifier.weight(1f))
+                            AvgCell(Kind.BOTH, fmt1(avg.diapers), s["diapers"], Modifier.weight(1f))
                         }
                     }
                 }
@@ -165,6 +169,7 @@ fun SummaryScreen(c: AppController, onBack: () -> Unit) {
             item { ChartCard("${s["feed"]} · ${s["ml"]} / ${s["day"]}", stats, cats.feed.accent) { it.ml } }
             item { ChartCard("${s["pee"]} / ${s["day"]}", stats, cats.pee.accent) { it.pee } }
             item { ChartCard("${s["poop"]} / ${s["day"]}", stats, cats.poop.accent) { it.poop } }
+            item { ChartCard("${s["diapers"]} (${s["pee"]} + ${s["poop"]}) / ${s["day"]}", stats, cats.both.accent) { it.diapers } }
             item { TableHeader() }
             items(stats.reversed(), key = { it.day }) { d -> TableRow(d, isToday = d.day == dayStart(now)) }
         }
@@ -227,14 +232,14 @@ private fun ChartCard(title: String, stats: List<DayStat>, color: Color, value: 
     }
 }
 
-private val COLS = listOf(1.6f, 0.9f, 1.1f, 1f, 0.9f, 0.9f)
+private val COLS = listOf(1.5f, 0.9f, 1.1f, 1f, 0.8f, 0.8f, 0.9f)
 
 @Composable
 private fun TableHeader() {
     val s = LocalStrings.current
     val st = MaterialTheme.typography.labelMedium
     Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
-        listOf(s["date"], s["feedsN"], s["ml"], s["avgMl"], s["pee"], s["poop"]).forEachIndexed { i, h ->
+        listOf(s["date"], s["feedsN"], s["ml"], s["avgMl"], s["pee"], s["poop"], s["diapersShort"]).forEachIndexed { i, h ->
             Text(h, style = st, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1,
                 textAlign = if (i == 0) TextAlign.Start else TextAlign.End, modifier = Modifier.weight(COLS[i]))
         }
@@ -251,9 +256,9 @@ private fun TableRow(d: DayStat, isToday: Boolean) {
                 Text(shortDate(d.day, s.lang), fontWeight = FontWeight.SemiBold, style = Tnum)
                 if (isToday) Text(s["soFar"], style = MaterialTheme.typography.labelSmall, color = cs.primary)
             }
-            listOf("${d.feeds}", "${d.ml}", if (d.feeds > 0) "${d.avgMl}" else "–", "${d.pee}", "${d.poop}")
+            listOf("${d.feeds}", "${d.ml}", if (d.feeds > 0) "${d.avgMl}" else "–", "${d.pee}", "${d.poop}", "${d.diapers}")
                 .forEachIndexed { i, v ->
-                    Text(v, style = Tnum, fontWeight = if (i == 1) FontWeight.Bold else FontWeight.Normal,
+                    Text(v, style = Tnum, fontWeight = if (i == 1 || i == 5) FontWeight.Bold else FontWeight.Normal,
                         textAlign = TextAlign.End, modifier = Modifier.weight(COLS[i + 1]))
                 }
         }
@@ -282,7 +287,7 @@ fun writeSummaryPdf(ctx: Context, c: AppController, stats: List<DayStat>, period
     val bold = Paint(text).apply { typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD) }
     val muted = Paint(text).apply { color = 0xFF777777.toInt() }
     val line = Paint().apply { color = 0xFFDDDDDD.toInt(); strokeWidth = 0.7f }
-    val feedC = Color(0xFF2F6FD6).toArgb(); val peeC = Color(0xFFD9A400).toArgb(); val poopC = Color(0xFF85552F).toArgb()
+    val feedC = Color(0xFF2F6FD6).toArgb(); val peeC = Color(0xFFD9A400).toArgb(); val poopC = Color(0xFF85552F).toArgb(); val diaperC = Color(0xFFA06B12).toArgb()
 
     var pageNo = 0
     var page = doc.startPage(PdfDocument.PageInfo.Builder(W, H, ++pageNo).create())
@@ -298,8 +303,9 @@ fun writeSummaryPdf(ctx: Context, c: AppController, stats: List<DayStat>, period
 
     // averages
     cv.drawText("${s["avgPerDay"]} (${avg.days} ${s["fullDays"]})", M, y + 12f, Paint(bold).apply { textSize = 12f }); y += 22f
-    val cellW = (W - 2 * M) / 4
-    listOf(fmt1(avg.ml) to s["ml"], fmt1(avg.feeds) to s["feedsN"], fmt1(avg.pee) to s["pee"], fmt1(avg.poop) to s["poop"])
+    val cellW = (W - 2 * M) / 5
+    listOf(fmt1(avg.ml) to s["ml"], fmt1(avg.feeds) to s["feedsN"], fmt1(avg.pee) to s["pee"], fmt1(avg.poop) to s["poop"],
+        fmt1(avg.diapers) to s["diapers"])
         .forEachIndexed { i, (v, l) ->
             cv.drawText(v, M + i * cellW, y + 18f, Paint(bold).apply { textSize = 18f })
             cv.drawText(l, M + i * cellW, y + 32f, muted)
@@ -333,10 +339,11 @@ fun writeSummaryPdf(ctx: Context, c: AppController, stats: List<DayStat>, period
     }
     chart("${s["feed"]} · ${s["ml"]} / ${s["day"]}", 110f, listOf(feedC to { d: DayStat -> d.ml }))
     chart("${s["pee"]} / ${s["poop"]} · ${s["day"]}", 70f, listOf(peeC to { d: DayStat -> d.pee }, poopC to { d: DayStat -> d.poop }))
+    chart("${s["diapers"]} (${s["pee"]} + ${s["poop"]}) / ${s["day"]}", 70f, listOf(diaperC to { d: DayStat -> d.diapers }))
 
     // table
-    val heads = listOf(s["date"], s["feedsN"], s["ml"], s["avgMl"], s["pee"], s["poop"])
-    val xs = listOf(M, M + 150f, M + 230f, M + 310f, M + 390f, M + 460f)
+    val heads = listOf(s["date"], s["feedsN"], s["ml"], s["avgMl"], s["pee"], s["poop"], s["diapers"])
+    val xs = listOf(M, M + 135f, M + 200f, M + 260f, M + 330f, M + 390f, M + 450f)
     fun header() {
         heads.forEachIndexed { i, h -> cv.drawText(h, xs[i], y + 10f, bold) }
         y += 14f; cv.drawLine(M, y, W - M, y, line); y += 4f
@@ -350,8 +357,8 @@ fun writeSummaryPdf(ctx: Context, c: AppController, stats: List<DayStat>, period
         }
         val isToday = d.day == dayStart(now)
         val cells = listOf(longDate(d.day, s.lang) + if (isToday) " (${s["soFar"]})" else "",
-            "${d.feeds}", "${d.ml}", if (d.feeds > 0) "${d.avgMl}" else "–", "${d.pee}", "${d.poop}")
-        cells.forEachIndexed { i, v -> cv.drawText(v, xs[i], y + 10f, if (i == 2) bold else text) }
+            "${d.feeds}", "${d.ml}", if (d.feeds > 0) "${d.avgMl}" else "–", "${d.pee}", "${d.poop}", "${d.diapers}")
+        cells.forEachIndexed { i, v -> cv.drawText(v, xs[i], y + 10f, if (i == 2 || i == 6) bold else text) }
         y += 14f; cv.drawLine(M, y, W - M, y, line); y += 2f
     }
     doc.finishPage(page)
