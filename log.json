@@ -3663,6 +3663,16 @@
    "by": "p-dad",
    "created": 1794699356800,
    "updated": 1794699356802
+  },
+  "mwh1o2fv8jd676uc": {
+   "id": "mwh1o2fv8jd676uc",
+   "type": "feed",
+   "t": 1794697200000,
+   "by": "p-dad",
+   "created": 1794699372379,
+   "updated": 1794699372380,
+   "side": "bottle",
+   "ml": 90
   }
  }
 }
