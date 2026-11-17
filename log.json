@@ -4048,6 +4048,32 @@
    "updated": 1794917932239,
    "side": "bottle",
    "ml": 110
+  },
+  "mwkrakzm11r2smu0": {
+   "id": "mwkrakzm11r2smu0",
+   "type": "pee",
+   "t": 1794922200000,
+   "by": "p-mom",
+   "created": 1794923811778,
+   "updated": 1794923811779
+  },
+  "mwkrao2v1bfxlhz": {
+   "id": "mwkrao2v1bfxlhz",
+   "type": "feed",
+   "t": 1794922200000,
+   "by": "p-mom",
+   "created": 1794923815783,
+   "updated": 1794923815784,
+   "side": "bottle",
+   "ml": 110
+  },
+  "mwkrarjsduk7s1sr": {
+   "id": "mwkrarjsduk7s1sr",
+   "type": "poop",
+   "t": 1794923400000,
+   "by": "p-mom",
+   "created": 1794923820280,
+   "updated": 1794923820281
   }
  }
 }
