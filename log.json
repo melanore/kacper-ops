@@ -5000,11 +5000,11 @@
   },
   "mwuid67k3d3e5xj9": {
    "id": "mwuid67k3d3e5xj9",
-   "type": "pee",
+   "type": "poop",
    "t": 1795512000000,
    "by": "p-mom",
    "created": 1795513477808,
-   "updated": 1795513477809
+   "updated": 1795536199131
   },
   "mwuidq7z58i5ro7d": {
    "id": "mwuidq7z58i5ro7d",
@@ -5015,6 +5015,24 @@
    "updated": 1795513503744,
    "side": "bottle",
    "ml": 105
+  },
+  "mwuvvas32neb2iqg": {
+   "id": "mwuvvas32neb2iqg",
+   "type": "pee",
+   "t": 1795527000000,
+   "by": "p-mom",
+   "created": 1795536158547,
+   "updated": 1795536158550
+  },
+  "mwuvvi6k1tysy7r9": {
+   "id": "mwuvvi6k1tysy7r9",
+   "type": "feed",
+   "t": 1795527000000,
+   "by": "p-mom",
+   "created": 1795536168140,
+   "updated": 1795536168141,
+   "side": "bottle",
+   "ml": 120
   },
   "mwv43br544a0udji": {
    "id": "mwv43br544a0udji",
